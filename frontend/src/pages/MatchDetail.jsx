@@ -3,6 +3,8 @@ import { useParams } from "react-router-dom";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { fetchMatch, aiPredictMatch } from "@/lib/api";
 import { LiveBadge } from "@/components/Shared";
+import Flag from "@/components/Flag";
+import SEO from "@/components/SEO";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
@@ -55,7 +57,7 @@ const MatchDetail = () => {
   const { data: match, isLoading } = useQuery({
     queryKey: ["match", id],
     queryFn: () => fetchMatch(id),
-    refetchInterval: 5000,
+    refetchInterval: (q) => (q?.state?.data?.status === "LIVE" ? 10_000 : 60_000),
   });
 
   const [prediction, setPrediction] = useState(null);
@@ -74,6 +76,10 @@ const MatchDetail = () => {
 
   return (
     <div data-testid="page-match-detail">
+      <SEO
+        title={`${match.home_team?.name} vs ${match.away_team?.name}`}
+        description={`${match.phase} · ${match.stadium_info?.name || ""}`}
+      />
       {/* Header */}
       <section className="relative border-b border-white/10 overflow-hidden grain">
         <div className="absolute inset-0 bg-cover bg-center opacity-20" style={{ backgroundImage: `url(${match.stadium_info?.image})` }} />
@@ -81,19 +87,23 @@ const MatchDetail = () => {
         <div className="relative section-pad py-12">
           <div className="flex items-center justify-between text-[10px] uppercase tracking-[0.25em] text-zinc-400 mb-6">
             <span>{match.phase} {match.group && `· Grupo ${match.group}`}</span>
-            {isLive ? <LiveBadge /> : <span className="font-mono text-neon">{new Date(match.kickoff).toLocaleString(undefined, { weekday: "long", day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}</span>}
+            {isLive
+              ? <LiveBadge />
+              : match.kickoff
+                ? <span className="font-mono text-neon">{new Date(match.kickoff).toLocaleString(undefined, { weekday: "long", day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}</span>
+                : null}
           </div>
           <div className="flex items-center justify-between gap-4">
             <div className="flex-1 flex flex-col items-center md:items-start gap-3" data-testid="match-home">
-              <span className="text-6xl md:text-8xl">{match.home_team?.flag}</span>
-              <h1 className="font-display font-bold text-2xl md:text-4xl uppercase tracking-tight">{match.home_team?.name}</h1>
+              <Flag iso={match.home_team?.iso2} size="2xl" title={match.home_team?.name} />
+              <h1 className="font-display font-bold text-2xl md:text-4xl uppercase tracking-tight text-center md:text-left">{match.home_team?.name}</h1>
             </div>
             <div className="font-mono text-5xl md:text-7xl font-bold">
               {isScheduled ? "VS" : `${match.score_home} - ${match.score_away}`}
             </div>
             <div className="flex-1 flex flex-col items-center md:items-end gap-3" data-testid="match-away">
-              <span className="text-6xl md:text-8xl">{match.away_team?.flag}</span>
-              <h1 className="font-display font-bold text-2xl md:text-4xl uppercase tracking-tight">{match.away_team?.name}</h1>
+              <Flag iso={match.away_team?.iso2} size="2xl" title={match.away_team?.name} />
+              <h1 className="font-display font-bold text-2xl md:text-4xl uppercase tracking-tight text-center md:text-right">{match.away_team?.name}</h1>
             </div>
           </div>
           {isLive && <div className="text-center mt-6 font-mono text-red-500 text-xl">MIN {match.minute}&apos;</div>}
@@ -203,6 +213,11 @@ const MatchDetail = () => {
               {/* Events */}
               <div className="bg-card border border-white/10 p-6">
                 <h3 className="font-display text-lg uppercase tracking-tight mb-4">Eventos del partido</h3>
+                {live.synthetic && (
+                  <div className="text-[10px] uppercase tracking-[0.2em] text-yellow-500/80 mb-3" data-testid="synthetic-note">
+                    ⚠ Telemetría avanzada estimada — los datos de posesión/xG no están disponibles en la fuente pública.
+                  </div>
+                )}
                 <div className="space-y-3" data-testid="live-events">
                   {(live.events || []).map((e) => (
                     <div key={`${e.minute}-${e.type}-${e.player}`} className="flex items-center gap-4 text-sm border-b border-white/5 pb-3 last:border-0">
@@ -212,7 +227,7 @@ const MatchDetail = () => {
                       </span>
                       <span className="text-zinc-300">{e.player}</span>
                       {e.detail && <span className="text-zinc-500 text-xs">— {e.detail}</span>}
-                      <span className="ml-auto text-xs">{e.team === "home" ? match.home_team?.flag : match.away_team?.flag}</span>
+                      <span className="ml-auto"><Flag iso={e.team === "home" ? match.home_team?.iso2 : match.away_team?.iso2} size="sm" /></span>
                     </div>
                   ))}
                 </div>

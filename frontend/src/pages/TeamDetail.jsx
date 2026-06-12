@@ -6,42 +6,45 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Sparkles, Trophy, Calendar, Users } from "lucide-react";
 import { MatchCard } from "@/components/Shared";
+import Flag from "@/components/Flag";
+import SEO from "@/components/SEO";
 
 const TeamDetail = () => {
   const { id } = useParams();
-  const { data: team } = useQuery({ queryKey: ["team", id], queryFn: () => fetchTeam(id) });
-  const { data: fan } = useQuery({ queryKey: ["fan", id], queryFn: () => fetchFanDashboard(id) });
+  const { data: team } = useQuery({ queryKey: ["team", id], queryFn: () => fetchTeam(id), refetchInterval: 60_000 });
+  const { data: fan } = useQuery({ queryKey: ["fan", id], queryFn: () => fetchFanDashboard(id), refetchInterval: 60_000 });
 
   const [story, setStory] = useState(null);
   const storyMut = useMutation({ mutationFn: () => aiStory(id), onSuccess: setStory });
 
   if (!team) return <div className="section-pad py-12 text-zinc-500" data-testid="loading">Cargando…</div>;
 
+  const stats = [
+    { id: "group", l: "Grupo", v: team.group || "—", icon: Trophy },
+    { id: "code", l: "FIFA", v: team.fifa_code || "—", icon: Calendar },
+    { id: "played", l: "Jugados", v: team.history?.played ?? 0, icon: Sparkles },
+    { id: "players", l: "Jugadores", v: team.players?.length || 0, icon: Users },
+  ];
+
   return (
     <div data-testid="page-team-detail">
+      <SEO title={team.name} description={`Ficha de ${team.name} en el Mundial 2026.`} />
       {/* Hero */}
       <section className="relative border-b border-white/10 grain">
         <div className="absolute inset-0 opacity-20" style={{ background: `linear-gradient(135deg, ${team.color}, transparent)` }} />
         <div className="relative section-pad py-12">
           <div className="flex items-center gap-6 flex-wrap">
-            <div className="text-8xl">{team.flag}</div>
+            <Flag iso={team.iso2} size="2xl" title={team.name} />
             <div>
-              <div className="text-[10px] tracking-[0.3em] uppercase text-neon font-bold mb-2">{team.confederation} · {team.federation}</div>
+              <div className="text-[10px] tracking-[0.3em] uppercase text-neon font-bold mb-2">{team.fifa_code} · Grupo {team.group}</div>
               <h1 className="font-display font-bold text-4xl sm:text-6xl uppercase tracking-tighter">{team.name}</h1>
-              <div className="text-zinc-400 mt-2 flex flex-wrap gap-x-6 gap-y-1 text-sm">
-                <span>DT: <span className="text-white">{team.coach}</span></span>
-                <span>Ranking FIFA: <span className="text-neon font-mono">#{team.ranking}</span></span>
-                <span>Grupo {team.group}</span>
+              <div className="text-zinc-400 mt-2 flex flex-wrap gap-x-6 gap-y-1 text-sm font-mono">
+                <span>{team.name_fa}</span>
               </div>
             </div>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-px bg-white/10 border border-white/10 mt-10">
-            {[
-              { id: "titles", l: "Títulos", v: team.titles, icon: Trophy },
-              { id: "appearances", l: "Mundiales", v: team.appearances, icon: Calendar },
-              { id: "debut", l: "Debut", v: team.debut, icon: Sparkles },
-              { id: "players", l: "Jugadores", v: team.players?.length || 0, icon: Users },
-            ].map((s) => (
+            {stats.map((s) => (
               <div key={s.id} className="bg-card p-4">
                 <s.icon size={16} className="text-neon mb-2" />
                 <div className="font-mono text-2xl">{s.v}</div>
@@ -53,42 +56,23 @@ const TeamDetail = () => {
       </section>
 
       <div className="section-pad py-12">
-        <Tabs defaultValue="squad">
-          <TabsList className="bg-transparent border-b border-white/10 rounded-none w-full justify-start gap-6 p-0 h-auto mb-8">
+        <Tabs defaultValue="history">
+          <TabsList className="bg-transparent border-b border-white/10 rounded-none w-full justify-start gap-6 p-0 h-auto mb-8 overflow-x-auto">
             {[
-              { v: "squad", l: "Plantilla" },
               { v: "history", l: "Historia" },
               { v: "story", l: "Story Mode IA" },
               { v: "calendar", l: "Calendario" },
             ].map(t => (
               <TabsTrigger key={t.v} value={t.v} data-testid={`tab-${t.v}`}
-                className="rounded-none bg-transparent border-b-2 border-transparent data-[state=active]:border-neon data-[state=active]:text-neon text-xs uppercase tracking-[0.2em] px-0 pb-3">
+                className="rounded-none bg-transparent border-b-2 border-transparent data-[state=active]:border-neon data-[state=active]:text-neon text-xs uppercase tracking-[0.2em] px-0 pb-3 whitespace-nowrap">
                 {t.l}
               </TabsTrigger>
             ))}
           </TabsList>
 
-          <TabsContent value="squad" data-testid="content-squad">
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-px bg-white/10 border border-white/10">
-              {(team.players || []).map((p) => (
-                <div key={p.name} className="bg-card p-5" data-testid={`player-${p.name}`}>
-                  <div className="text-[10px] uppercase tracking-[0.2em] text-neon mb-1">{p.pos}</div>
-                  <div className="font-display text-lg uppercase tracking-tight font-bold">{p.name}</div>
-                  <div className="text-xs text-zinc-400 mt-1">{p.club} · {p.age} años</div>
-                  <div className="grid grid-cols-3 gap-2 mt-4 text-center border-t border-white/10 pt-3">
-                    <div><div className="font-mono">{p.caps}</div><div className="text-[9px] uppercase tracking-[0.15em] text-zinc-500">CAPS</div></div>
-                    <div><div className="font-mono text-neon">{p.goals}</div><div className="text-[9px] uppercase tracking-[0.15em] text-zinc-500">GOL</div></div>
-                    <div><div className="font-mono text-xs">{p.value}</div><div className="text-[9px] uppercase tracking-[0.15em] text-zinc-500">VALOR</div></div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </TabsContent>
-
           <TabsContent value="history" data-testid="content-history">
             <div className="bg-card border border-white/10 p-6">
-              <h3 className="font-display text-2xl uppercase mb-4">Récord mundialista</h3>
-              <p className="text-zinc-300 mb-6">Mejor resultado: <span className="text-neon">{team.best}</span></p>
+              <h3 className="font-display text-2xl uppercase mb-4">Récord en este Mundial</h3>
               <div className="grid grid-cols-2 md:grid-cols-5 gap-px bg-white/10 border border-white/10">
                 {[
                   { id: "wins", l: "Victorias", v: team.history?.wins },
@@ -98,7 +82,7 @@ const TeamDetail = () => {
                   { id: "ga", l: "GC", v: team.history?.goals_against },
                 ].map((s) => (
                   <div key={s.id} className="bg-card p-4">
-                    <div className="font-mono text-2xl text-white">{s.v}</div>
+                    <div className="font-mono text-2xl text-white">{s.v ?? 0}</div>
                     <div className="text-[10px] uppercase tracking-[0.2em] text-zinc-500 mt-1">{s.l}</div>
                   </div>
                 ))}
@@ -155,8 +139,8 @@ const TeamDetail = () => {
               {[...(fan?.live || []), ...(fan?.upcoming || []), ...(fan?.recent || [])].map(m => (
                 <MatchCard key={m.id} match={m} />
               ))}
-              {(!fan || (fan.live.length === 0 && fan.upcoming.length === 0 && fan.recent.length === 0)) && (
-                <div className="text-zinc-500 text-sm">Sin partidos.</div>
+              {(!fan || (fan.live?.length === 0 && fan.upcoming?.length === 0 && fan.recent?.length === 0)) && (
+                <div className="text-zinc-500 text-sm border border-dashed border-white/10 p-8 text-center">Sin partidos en el calendario.</div>
               )}
             </div>
           </TabsContent>

@@ -2,6 +2,8 @@ import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { fetchTopScorers, fetchTopAssists, fetchStatsOverview } from "@/lib/api";
 import { SectionHeader } from "@/components/Shared";
+import Flag from "@/components/Flag";
+import SEO from "@/components/SEO";
 import { RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, Legend } from "recharts";
 
 const PALETTE = ["#00E5FF", "#FF2A54", "#FFB800", "#8B5CF6", "#10B981"];
@@ -13,9 +15,9 @@ const CHART_TOOLTIP_STYLE = { background: "#0a0a0a", border: "1px solid rgba(255
 const LEGEND_STYLE = { fontSize: 11 };
 
 const Stats = () => {
-  const { data: scorers } = useQuery({ queryKey: ["scorers"], queryFn: fetchTopScorers });
-  const { data: assists } = useQuery({ queryKey: ["assists"], queryFn: fetchTopAssists });
-  const { data: overview } = useQuery({ queryKey: ["overview"], queryFn: fetchStatsOverview });
+  const { data: scorers } = useQuery({ queryKey: ["scorers"], queryFn: fetchTopScorers, refetchInterval: 120_000 });
+  const { data: assists } = useQuery({ queryKey: ["assists"], queryFn: fetchTopAssists, refetchInterval: 120_000 });
+  const { data: overview } = useQuery({ queryKey: ["overview"], queryFn: fetchStatsOverview, refetchInterval: 120_000 });
 
   const radarTeams = overview?.team_radar ? Object.entries(overview.team_radar) : [];
   const radarData = RADAR_STATS.map(k => {
@@ -28,6 +30,7 @@ const Stats = () => {
 
   return (
     <div className="section-pad py-12" data-testid="page-stats">
+      <SEO title="Estadísticas" description="Centro de estadísticas avanzadas del Mundial 2026." />
       <SectionHeader kicker="ANÁLISIS" title="Centro de estadísticas" />
 
       {/* Radar */}
@@ -75,32 +78,38 @@ const Stats = () => {
             <h3 className="font-display text-lg uppercase">Goleadores</h3>
           </div>
           {(scorers || []).map((s, i) => (
-            <div key={s.player} className="flex items-center gap-3 p-3 border-b border-white/5 last:border-0">
+            <div key={`${s.player}-${s.team}`} className="flex items-center gap-3 p-3 border-b border-white/5 last:border-0">
               <span className="font-mono text-xs text-zinc-500 w-6">{i + 1}</span>
-              <span>{s.team_info?.flag}</span>
-              <div className="flex-1">
-                <div className="text-sm">{s.player}</div>
-                <div className="text-[10px] text-zinc-500 uppercase tracking-[0.1em]">{s.team_info?.name}</div>
+              <Flag iso={s.team_info?.iso2} size="sm" />
+              <div className="flex-1 min-w-0">
+                <div className="text-sm truncate">{s.player}</div>
+                <div className="text-[10px] text-zinc-500 uppercase tracking-[0.1em] truncate">{s.team_info?.name}</div>
               </div>
               <div className="font-mono text-neon">{s.goals}</div>
             </div>
           ))}
+          {(!scorers || scorers.length === 0) && (
+            <div className="p-8 text-center text-zinc-500 text-sm">Aún no hay goles registrados.</div>
+          )}
         </div>
         <div className="bg-card border border-white/10" data-testid="assists-list">
           <div className="p-4 border-b border-white/10">
             <h3 className="font-display text-lg uppercase">Asistencias</h3>
           </div>
           {(assists || []).map((s, i) => (
-            <div key={s.player} className="flex items-center gap-3 p-3 border-b border-white/5 last:border-0">
+            <div key={`${s.player}-${s.team}`} className="flex items-center gap-3 p-3 border-b border-white/5 last:border-0">
               <span className="font-mono text-xs text-zinc-500 w-6">{i + 1}</span>
-              <span>{s.team_info?.flag}</span>
-              <div className="flex-1">
-                <div className="text-sm">{s.player}</div>
-                <div className="text-[10px] text-zinc-500 uppercase tracking-[0.1em]">{s.team_info?.name}</div>
+              <Flag iso={s.team_info?.iso2} size="sm" />
+              <div className="flex-1 min-w-0">
+                <div className="text-sm truncate">{s.player}</div>
+                <div className="text-[10px] text-zinc-500 uppercase tracking-[0.1em] truncate">{s.team_info?.name}</div>
               </div>
               <div className="font-mono text-neon">{s.assists}</div>
             </div>
           ))}
+          {(!assists || assists.length === 0) && (
+            <div className="p-8 text-center text-zinc-500 text-sm">Datos de asistencias no disponibles en la fuente pública.</div>
+          )}
         </div>
       </div>
     </div>

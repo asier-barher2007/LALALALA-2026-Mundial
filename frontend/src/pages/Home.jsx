@@ -4,6 +4,9 @@ import { Link } from "react-router-dom";
 import { fetchNextMatch, fetchMatches, fetchTopScorers, fetchStatsOverview } from "@/lib/api";
 import Countdown from "@/components/Countdown";
 import { MatchCard, LiveBadge, SectionHeader } from "@/components/Shared";
+import Flag from "@/components/Flag";
+import SEO from "@/components/SEO";
+import { SkeletonMatchRow } from "@/components/Skeleton";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Sparkles, Map, Activity, Trophy } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
@@ -25,10 +28,18 @@ const FEATURES = [
 
 const Home = () => {
   const { t } = useI18n();
-  const { data: nextMatch } = useQuery({ queryKey: ["next-match"], queryFn: fetchNextMatch, refetchInterval: 5000 });
-  const { data: matches } = useQuery({ queryKey: ["matches"], queryFn: () => fetchMatches() });
-  const { data: scorers } = useQuery({ queryKey: ["scorers"], queryFn: fetchTopScorers });
-  const { data: overview } = useQuery({ queryKey: ["overview"], queryFn: fetchStatsOverview });
+  const { data: nextMatch, isLoading: loadingNext } = useQuery({
+    queryKey: ["next-match"],
+    queryFn: fetchNextMatch,
+    refetchInterval: (q) => (q?.state?.data?.status === "LIVE" ? 10_000 : 60_000),
+  });
+  const { data: matches, isLoading: loadingMatches } = useQuery({
+    queryKey: ["matches"],
+    queryFn: () => fetchMatches(),
+    refetchInterval: 60_000,
+  });
+  const { data: scorers } = useQuery({ queryKey: ["scorers"], queryFn: fetchTopScorers, refetchInterval: 120_000 });
+  const { data: overview } = useQuery({ queryKey: ["overview"], queryFn: fetchStatsOverview, refetchInterval: 120_000 });
 
   const featuredMatches = useMemo(
     () => (matches || []).filter(m => m.status !== "FT").slice(0, 4),
@@ -40,6 +51,10 @@ const Home = () => {
 
   return (
     <div data-testid="page-home">
+      <SEO
+        title="Inicio"
+        description="WorldCup Nexus — Datos en tiempo real, predicciones IA y la mejor experiencia del Mundial 2026."
+      />
       {/* HERO */}
       <section className="relative overflow-hidden border-b border-white/10 grain" data-testid="hero">
         <div
@@ -64,15 +79,15 @@ const Home = () => {
               </div>
               <div className="flex items-center justify-between gap-4 mb-6">
                 <div className="flex-1 flex flex-col items-center md:items-start gap-2">
-                  <span className="text-5xl md:text-7xl">{nextMatch.home_team?.flag}</span>
-                  <span className="font-display font-bold text-xl md:text-2xl uppercase tracking-tight">{nextMatch.home_team?.name}</span>
+                  <Flag iso={nextMatch.home_team?.iso2} size="2xl" title={nextMatch.home_team?.name} />
+                  <span className="font-display font-bold text-xl md:text-2xl uppercase tracking-tight text-center md:text-left">{nextMatch.home_team?.name}</span>
                 </div>
                 <div className="font-mono text-3xl md:text-5xl">
                   {isLive ? `${nextMatch.score_home} - ${nextMatch.score_away}` : "VS"}
                 </div>
                 <div className="flex-1 flex flex-col items-center md:items-end gap-2">
-                  <span className="text-5xl md:text-7xl">{nextMatch.away_team?.flag}</span>
-                  <span className="font-display font-bold text-xl md:text-2xl uppercase tracking-tight">{nextMatch.away_team?.name}</span>
+                  <Flag iso={nextMatch.away_team?.iso2} size="2xl" title={nextMatch.away_team?.name} />
+                  <span className="font-display font-bold text-xl md:text-2xl uppercase tracking-tight text-center md:text-right">{nextMatch.away_team?.name}</span>
                 </div>
               </div>
               {isLive ? (
@@ -123,9 +138,11 @@ const Home = () => {
           action={<Link to="/matches"><Button variant="outline" size="sm" className="rounded-none uppercase tracking-widest text-xs" data-testid="view-all-matches">{t("common.viewAll")} <ArrowRight size={14} className="ml-2" /></Button></Link>}
         />
         <div className="grid md:grid-cols-2 gap-4">
-          {featuredMatches.map(m => (
-            <MatchCard key={m.id} match={m} testId={`home-match-${m.id}`} />
-          ))}
+          {loadingMatches && featuredMatches.length === 0
+            ? Array.from({ length: 4 }).map((_, i) => <SkeletonMatchRow key={i} />)
+            : featuredMatches.map(m => (
+                <MatchCard key={m.id} match={m} testId={`home-match-${m.id}`} />
+              ))}
         </div>
       </section>
 
@@ -142,7 +159,7 @@ const Home = () => {
               <div className="font-mono text-xs text-zinc-500 mb-2">#{i + 1}</div>
               <div className="font-display text-lg uppercase tracking-tight font-semibold">{s.player}</div>
               <div className="flex items-center gap-2 mt-1 text-xs text-zinc-400">
-                <span>{s.team_info?.flag}</span><span>{s.team_info?.name}</span>
+                <Flag iso={s.team_info?.iso2} size="sm" /><span>{s.team_info?.name}</span>
               </div>
               <div className="mt-4 flex items-end gap-3">
                 <div>

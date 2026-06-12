@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { fetchTeams, aiSimulateMatch } from "@/lib/api";
 import { SectionHeader } from "@/components/Shared";
+import Flag from "@/components/Flag";
+import SEO from "@/components/SEO";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sparkles, Trophy } from "lucide-react";
