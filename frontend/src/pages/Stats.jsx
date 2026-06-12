@@ -28,8 +28,8 @@ const Stats = () => {
       <div className="bg-card border border-white/10 p-6 mb-8" data-testid="radar-card">
         <h3 className="font-display text-xl uppercase tracking-tight mb-1">Comparador radar de selecciones</h3>
         <p className="text-xs text-zinc-500 mb-4">Métricas avanzadas por selección</p>
-        <div className="h-80">
-          <ResponsiveContainer width="100%" height="100%">
+        <div className="h-80 min-h-[320px] w-full">
+          <ResponsiveContainer width="100%" height="100%" minHeight={320}>
             <RadarChart data={radarData}>
               <PolarGrid stroke="#222" />
               <PolarAngleAxis dataKey="stat" tick={{ fill: "#888", fontSize: 11 }} />
@@ -48,8 +48,8 @@ const Stats = () => {
       <div className="bg-card border border-white/10 p-6 mb-8" data-testid="scorer-chart">
         <h3 className="font-display text-xl uppercase tracking-tight mb-1">Goleadores: Goles vs xG</h3>
         <p className="text-xs text-zinc-500 mb-4">Quién está superando su expectativa</p>
-        <div className="h-72">
-          <ResponsiveContainer width="100%" height="100%">
+        <div className="h-72 min-h-[288px] w-full">
+          <ResponsiveContainer width="100%" height="100%" minHeight={288}>
             <BarChart data={scorerBar}>
               <XAxis dataKey="name" stroke="#888" tick={{ fontSize: 10 }} />
               <YAxis stroke="#888" tick={{ fontSize: 10 }} />

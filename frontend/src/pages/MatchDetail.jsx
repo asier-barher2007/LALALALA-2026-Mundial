@@ -147,8 +147,8 @@ const MatchDetail = () => {
                   <h3 className="font-display text-lg uppercase tracking-tight">Match Momentum Engine</h3>
                   <span className="text-[10px] uppercase tracking-[0.2em] text-zinc-500">Quién domina, minuto a minuto</span>
                 </div>
-                <div className="h-48" data-testid="momentum-chart">
-                  <ResponsiveContainer width="100%" height="100%">
+                <div className="h-48 min-h-[192px] w-full" data-testid="momentum-chart">
+                  <ResponsiveContainer width="100%" height="100%" minHeight={192}>
                     <LineChart data={momentumData}>
                       <XAxis dataKey="minute" stroke="#666" tick={{ fontSize: 10 }} />
                       <YAxis domain={[-100, 100]} stroke="#666" tick={{ fontSize: 10 }} />
