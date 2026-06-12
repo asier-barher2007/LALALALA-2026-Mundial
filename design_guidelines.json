@@ -1,0 +1,109 @@
+{
+  "project_name": "WorldCup Nexus",
+  "theme": "dark-first",
+  "archetype": "Archetype 2: Performance Pro + Archetype 5: Luxury Hybrid",
+  "domain": "Sports Tracking Premium Product",
+  "typography": {
+    "heading_font": "Cabinet Grotesk",
+    "heading_font_fallback": "Oswald",
+    "body_font": "Manrope",
+    "mono_font": "JetBrains Mono",
+    "hierarchy": {
+      "h1": "text-5xl sm:text-6xl tracking-tighter font-bold uppercase",
+      "h2": "text-3xl sm:text-4xl tracking-tight font-bold uppercase",
+      "h3": "text-xl sm:text-2xl tracking-tight font-semibold",
+      "body": "text-base leading-relaxed text-zinc-300",
+      "small_labels": "text-xs tracking-[0.2em] uppercase font-bold text-zinc-500",
+      "data_numbers": "font-mono text-3xl sm:text-4xl tracking-tight text-white"
+    }
+  },
+  "colors": {
+    "background": "#050505",
+    "surface": "#0A0A0A",
+    "surface_hover": "#141414",
+    "border": "rgba(255, 255, 255, 0.1)",
+    "primary": "#00E5FF",
+    "primary_hover": "#00B8CC",
+    "live_accent": "#FF2A54",
+    "text": {
+      "primary": "#FFFFFF",
+      "secondary": "#A1A1AA",
+      "muted": "#71717A"
+    },
+    "dataviz": [
+      "#00E5FF",
+      "#FF2A54",
+      "#FFB800",
+      "#8B5CF6",
+      "#10B981"
+    ],
+    "light_mode_overrides": {
+      "background": "#F8F9FA",
+      "surface": "#FFFFFF",
+      "surface_hover": "#F1F5F9",
+      "border": "rgba(0, 0, 0, 0.1)",
+      "text_primary": "#0A0A0A"
+    }
+  },
+  "layout_and_spacing": {
+    "grid_system": "Control Room Grid (gap-4 or gap-6) for dashboards, Tetris Grid for Hero and Map.",
+    "container_padding": "px-6 md:px-12 lg:px-24",
+    "card_padding": "p-6",
+    "surfaces": {
+      "header": "Crystal Glassmorphism: bg-black/60 backdrop-blur-xl border-b border-white/10 (Dark Mode).",
+      "cards": "Flat background with 1px subtle border (border-white/10), no soft shadow, sharp edges (rounded-sm or rounded-none)."
+    }
+  },
+  "motion": {
+    "hover_state": "Slight brightness increase, border glow, text color explicit change. hover:bg-zinc-900 hover:text-white",
+    "live_indicator": "Pulsing red dot with opacity animation (ease-in-out infinite).",
+    "page_transitions": "Smooth opacity and slight Y-axis translation for immersive feeling."
+  },
+  "components": {
+    "buttons": "Shadcn Button customized: uppercase, wide letter spacing, sharp corners (rounded-none or rounded-sm). Primary uses #00E5FF bg with black text.",
+    "cards": "Override default Shadcn card padding to p-6. Apply border-white/10 and flat bg-black.",
+    "tabs": "Shadcn Tabs, transparent list background, use bottom-border active indicator instead of pill.",
+    "badges": "Sharp edges, 1px border. Live match badge uses border-red-500/50 text-red-500 bg-red-500/10.",
+    "charts": "Recharts inside Shadcn Chart container. Use dataviz color palette. No grids or very subtle dotted grid lines."
+  },
+  "icons": {
+    "library": "lucide-react",
+    "style": "Stroke width 1.5 or 2.0, sharp and technical. Used for data labels, arrows, and nav."
+  },
+  "image_urls": [
+    {
+      "category": "hero_background",
+      "url": "https://images.unsplash.com/photo-1522778119026-d647f0596c20?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA0MTJ8MHwxfHNlYXJjaHwxfHxzb2NjZXIlMjBzdGFkaXVtJTIwbmlnaHQlMjBsaWdodHN8ZW58MHx8fHwxNzgxMjc0MDE0fDA&ixlib=rb-4.1.0&q=85",
+      "description": "Cinematic dark stadium lights for home hero."
+    },
+    {
+      "category": "stadium_aerial",
+      "url": "https://images.unsplash.com/photo-1489944440615-453fc2b6a9a9?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA0MTJ8MHwxfHNlYXJjaHwyfHxzb2NjZXIlMjBzdGFkaXVtJTIwbmlnaHQlMjBsaWdodHN8ZW58MHx8fHwxNzgxMjc0MDE0fDA&ixlib=rb-4.1.0&q=85",
+      "description": "Aerial stadium view for Interactive Map previews."
+    },
+    {
+      "category": "player_action",
+      "url": "https://images.pexels.com/photos/36862523/pexels-photo-36862523.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "description": "Intense player action for Match Center or Story Mode."
+    },
+    {
+      "category": "ai_simulator_bg",
+      "url": "https://images.pexels.com/photos/10325707/pexels-photo-10325707.png?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "description": "Abstract neon nodes for the AI Simulator predictions background."
+    }
+  ],
+  "accessibility_and_testing": {
+    "test_ids": "All interactive elements MUST have data-testid attributes (e.g. data-testid='live-match-card').",
+    "contrast": "Ensure text over images has dark gradient overlay (e.g., bg-gradient-to-t from-black via-black/60 to-transparent)."
+  },
+  "instructions_to_main_agent": [
+    "Theme: Build as a dark-first application. Switch to light mode should respect light_mode_overrides.",
+    "Typography: Import and use Cabinet Grotesk (via Fontshare) or Oswald (Google Fonts) for main headings. Use JetBrains Mono for scores, countdowns, and stats data. Manrope for general body.",
+    "Hero Section: Must feel cinematic. Use 'hero_background' image with heavy dark gradient overlay. Include big numerical countdown in JetBrains Mono.",
+    "Live Ticker: Implement a visual motion pulsing red dot next to a 'LIVE' badge.",
+    "Data Visualizations: Use Recharts heavily for radar, heatmaps, and temporal evolution. Strip default axes lines; use the dataviz array for colors.",
+    "Flags/Teams: Use standard circular emoji flags or standard SVG initials if exact logos are unavailable. Enclose them in subtle borders.",
+    "Layout: Apply 'Control Room' bento grid for Stats and AI Simulator pages. Eliminate empty space, ensure precise alignment.",
+    "Overall Vibe: Maintain a high-end, premium feel similar to F1.com or UEFA. Avoid generic SaaS purple gradients; strictly use Obsidian base with Neon Cyan and Crimson Red accents."
+  ]
+}
