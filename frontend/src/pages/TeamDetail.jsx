@@ -37,12 +37,12 @@ const TeamDetail = () => {
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-px bg-white/10 border border-white/10 mt-10">
             {[
-              { l: "Títulos", v: team.titles, icon: Trophy },
-              { l: "Mundiales", v: team.appearances, icon: Calendar },
-              { l: "Debut", v: team.debut, icon: Sparkles },
-              { l: "Jugadores", v: team.players?.length || 0, icon: Users },
-            ].map((s, i) => (
-              <div key={i} className="bg-card p-4">
+              { id: "titles", l: "Títulos", v: team.titles, icon: Trophy },
+              { id: "appearances", l: "Mundiales", v: team.appearances, icon: Calendar },
+              { id: "debut", l: "Debut", v: team.debut, icon: Sparkles },
+              { id: "players", l: "Jugadores", v: team.players?.length || 0, icon: Users },
+            ].map((s) => (
+              <div key={s.id} className="bg-card p-4">
                 <s.icon size={16} className="text-neon mb-2" />
                 <div className="font-mono text-2xl">{s.v}</div>
                 <div className="text-[10px] uppercase tracking-[0.2em] text-zinc-500 mt-1">{s.l}</div>
@@ -70,8 +70,8 @@ const TeamDetail = () => {
 
           <TabsContent value="squad" data-testid="content-squad">
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-px bg-white/10 border border-white/10">
-              {(team.players || []).map((p, i) => (
-                <div key={i} className="bg-card p-5" data-testid={`player-${i}`}>
+              {(team.players || []).map((p) => (
+                <div key={p.name} className="bg-card p-5" data-testid={`player-${p.name}`}>
                   <div className="text-[10px] uppercase tracking-[0.2em] text-neon mb-1">{p.pos}</div>
                   <div className="font-display text-lg uppercase tracking-tight font-bold">{p.name}</div>
                   <div className="text-xs text-zinc-400 mt-1">{p.club} · {p.age} años</div>
@@ -91,13 +91,13 @@ const TeamDetail = () => {
               <p className="text-zinc-300 mb-6">Mejor resultado: <span className="text-neon">{team.best}</span></p>
               <div className="grid grid-cols-2 md:grid-cols-5 gap-px bg-white/10 border border-white/10">
                 {[
-                  { l: "Victorias", v: team.history?.wins },
-                  { l: "Empates", v: team.history?.draws },
-                  { l: "Derrotas", v: team.history?.losses },
-                  { l: "GF", v: team.history?.goals_for },
-                  { l: "GC", v: team.history?.goals_against },
-                ].map((s, i) => (
-                  <div key={i} className="bg-card p-4">
+                  { id: "wins", l: "Victorias", v: team.history?.wins },
+                  { id: "draws", l: "Empates", v: team.history?.draws },
+                  { id: "losses", l: "Derrotas", v: team.history?.losses },
+                  { id: "gf", l: "GF", v: team.history?.goals_for },
+                  { id: "ga", l: "GC", v: team.history?.goals_against },
+                ].map((s) => (
+                  <div key={s.id} className="bg-card p-4">
                     <div className="font-mono text-2xl text-white">{s.v}</div>
                     <div className="text-[10px] uppercase tracking-[0.2em] text-zinc-500 mt-1">{s.l}</div>
                   </div>
@@ -119,10 +119,10 @@ const TeamDetail = () => {
               )}
               {story && (
                 <div data-testid="story-result">
-                  {story.tagline && <div className="font-display text-2xl sm:text-3xl uppercase tracking-tight text-neon mb-8">"{story.tagline}"</div>}
+                  {story.tagline && <div className="font-display text-2xl sm:text-3xl uppercase tracking-tight text-neon mb-8">&ldquo;{story.tagline}&rdquo;</div>}
                   <div className="space-y-6">
-                    {(story.chapters || []).map((c, i) => (
-                      <div key={i} className="border-l-2 border-neon pl-6 py-2">
+                    {(story.chapters || []).map((c) => (
+                      <div key={`${c.year}-${c.title}`} className="border-l-2 border-neon pl-6 py-2">
                         <div className="font-mono text-xs text-zinc-500">{c.year}</div>
                         <h4 className="font-display text-xl uppercase tracking-tight mt-1">{c.title}</h4>
                         <p className="text-zinc-300 mt-2 leading-relaxed">{c.narrative}</p>
@@ -139,8 +139,8 @@ const TeamDetail = () => {
                     <div className="mt-6">
                       <div className="text-[10px] uppercase tracking-[0.3em] text-zinc-500 mb-3">LEYENDAS</div>
                       <div className="flex flex-wrap gap-2">
-                        {story.legends.map((l, i) => (
-                          <span key={i} className="border border-white/20 px-3 py-1 text-sm uppercase tracking-wide">{l}</span>
+                        {story.legends.map((l) => (
+                          <span key={l} className="border border-white/20 px-3 py-1 text-sm uppercase tracking-wide">{l}</span>
                         ))}
                       </div>
                     </div>

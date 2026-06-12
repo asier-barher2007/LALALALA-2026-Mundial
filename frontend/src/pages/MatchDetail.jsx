@@ -9,6 +9,29 @@ import { Progress } from "@/components/ui/progress";
 import { LineChart, Line, ResponsiveContainer, ReferenceLine, XAxis, YAxis, Tooltip } from "recharts";
 import { Sparkles, MapPin, User } from "lucide-react";
 
+const CHART_AXIS_TICK = { fontSize: 10 };
+const MOMENTUM_DOMAIN = [-100, 100];
+const CHART_TOOLTIP_STYLE = { background: "#0a0a0a", border: "1px solid rgba(255,255,255,0.1)", fontSize: 12 };
+
+const EVENT_BADGE_STYLE = {
+  goal: "bg-neon text-black",
+  yellow: "bg-yellow-500/20 text-yellow-500",
+};
+const EVENT_LABEL = {
+  goal: "GOL",
+  yellow: "TA",
+  substitution: "CAMBIO",
+};
+
+const formatEventBadge = (type) => EVENT_BADGE_STYLE[type] || "bg-white/10 text-zinc-300";
+const formatEventLabel = (type) => EVENT_LABEL[type] || type;
+
+const getDefaultTab = (status) => {
+  if (status === "LIVE") return "live";
+  if (status === "SCHEDULED") return "preview";
+  return "summary";
+};
+
 const StatBar = ({ label, home, away, format = (v) => v, testId }) => {
   const total = (Number(home) + Number(away)) || 1;
   const homePct = (Number(home) / total) * 100;
@@ -73,7 +96,7 @@ const MatchDetail = () => {
               <h1 className="font-display font-bold text-2xl md:text-4xl uppercase tracking-tight">{match.away_team?.name}</h1>
             </div>
           </div>
-          {isLive && <div className="text-center mt-6 font-mono text-red-500 text-xl">MIN {match.minute}'</div>}
+          {isLive && <div className="text-center mt-6 font-mono text-red-500 text-xl">MIN {match.minute}&apos;</div>}
           <div className="mt-8 flex flex-wrap gap-6 text-xs text-zinc-400 font-mono">
             <span className="flex items-center gap-2"><MapPin size={14} /> {match.stadium_info?.name}, {match.stadium_info?.city}</span>
             <span className="flex items-center gap-2"><User size={14} /> Árbitro: {match.referee}</span>
@@ -82,7 +105,7 @@ const MatchDetail = () => {
       </section>
 
       <div className="section-pad py-12">
-        <Tabs defaultValue={isLive ? "live" : isScheduled ? "preview" : "summary"}>
+        <Tabs defaultValue={getDefaultTab(match.status)}>
           <TabsList className="bg-transparent border-b border-white/10 rounded-none w-full justify-start gap-6 p-0 h-auto mb-8">
             {isScheduled && <TabsTrigger value="preview" data-testid="tab-preview" className="rounded-none bg-transparent border-b-2 border-transparent data-[state=active]:border-neon data-[state=active]:text-neon text-xs uppercase tracking-[0.2em] px-0 pb-3">Vista previa</TabsTrigger>}
             {isLive && <TabsTrigger value="live" data-testid="tab-live" className="rounded-none bg-transparent border-b-2 border-transparent data-[state=active]:border-neon data-[state=active]:text-neon text-xs uppercase tracking-[0.2em] px-0 pb-3">En vivo</TabsTrigger>}
@@ -108,12 +131,12 @@ const MatchDetail = () => {
                 <div className="mt-6 bg-card border border-white/10 p-6 space-y-4" data-testid="prediction-result">
                   <div className="grid grid-cols-3 gap-2 text-center">
                     {[
-                      { label: match.home_team?.code, value: prediction.prob_home, accent: "neon" },
-                      { label: "EMPATE", value: prediction.prob_draw },
-                      { label: match.away_team?.code, value: prediction.prob_away, accent: "live" },
-                    ].map((p, i) => (
-                      <div key={i} className="bg-black/40 border border-white/10 p-4">
-                        <div className={`font-mono text-3xl ${p.accent === "neon" ? "text-neon" : p.accent === "live" ? "text-red-500" : "text-white"}`}>
+                      { label: match.home_team?.code, value: prediction.prob_home, accentClass: "text-neon" },
+                      { label: "EMPATE", value: prediction.prob_draw, accentClass: "text-white" },
+                      { label: match.away_team?.code, value: prediction.prob_away, accentClass: "text-red-500" },
+                    ].map((p) => (
+                      <div key={p.label} className="bg-black/40 border border-white/10 p-4">
+                        <div className={`font-mono text-3xl ${p.accentClass}`}>
                           {Math.round((p.value || 0) * 100)}%
                         </div>
                         <div className="text-[10px] uppercase tracking-[0.2em] text-zinc-500 mt-1">{p.label}</div>
@@ -150,10 +173,10 @@ const MatchDetail = () => {
                 <div className="h-48 min-h-[192px] w-full" data-testid="momentum-chart">
                   <ResponsiveContainer width="100%" height="100%" minHeight={192}>
                     <LineChart data={momentumData}>
-                      <XAxis dataKey="minute" stroke="#666" tick={{ fontSize: 10 }} />
-                      <YAxis domain={[-100, 100]} stroke="#666" tick={{ fontSize: 10 }} />
+                      <XAxis dataKey="minute" stroke="#666" tick={CHART_AXIS_TICK} />
+                      <YAxis domain={MOMENTUM_DOMAIN} stroke="#666" tick={CHART_AXIS_TICK} />
                       <ReferenceLine y={0} stroke="#444" />
-                      <Tooltip contentStyle={{ background: "#0a0a0a", border: "1px solid rgba(255,255,255,0.1)", fontSize: 12 }} />
+                      <Tooltip contentStyle={CHART_TOOLTIP_STYLE} />
                       <Line type="monotone" dataKey="value" stroke="#00E5FF" strokeWidth={2} dot={false} />
                     </LineChart>
                   </ResponsiveContainer>
@@ -181,11 +204,11 @@ const MatchDetail = () => {
               <div className="bg-card border border-white/10 p-6">
                 <h3 className="font-display text-lg uppercase tracking-tight mb-4">Eventos del partido</h3>
                 <div className="space-y-3" data-testid="live-events">
-                  {(live.events || []).map((e, i) => (
-                    <div key={i} className="flex items-center gap-4 text-sm border-b border-white/5 pb-3 last:border-0">
-                      <span className="font-mono text-zinc-500 w-12">{e.minute}'</span>
-                      <span className={`text-[10px] uppercase tracking-[0.2em] px-2 py-1 ${e.type === "goal" ? "bg-neon text-black" : e.type === "yellow" ? "bg-yellow-500/20 text-yellow-500" : "bg-white/10 text-zinc-300"}`}>
-                        {e.type === "goal" ? "GOL" : e.type === "yellow" ? "TA" : e.type === "substitution" ? "CAMBIO" : e.type}
+                  {(live.events || []).map((e) => (
+                    <div key={`${e.minute}-${e.type}-${e.player}`} className="flex items-center gap-4 text-sm border-b border-white/5 pb-3 last:border-0">
+                      <span className="font-mono text-zinc-500 w-12">{e.minute}&apos;</span>
+                      <span className={`text-[10px] uppercase tracking-[0.2em] px-2 py-1 ${formatEventBadge(e.type)}`}>
+                        {formatEventLabel(e.type)}
                       </span>
                       <span className="text-zinc-300">{e.player}</span>
                       {e.detail && <span className="text-zinc-500 text-xs">— {e.detail}</span>}

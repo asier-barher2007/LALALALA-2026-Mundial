@@ -86,8 +86,8 @@ const Rivality = () => {
             <div>
               <h4 className="font-display text-lg uppercase mb-3">Partidos históricos</h4>
               <div className="space-y-2">
-                {result.result.historic_matches.map((h, i) => (
-                  <div key={i} className="flex items-center gap-4 text-sm border-b border-white/5 py-2">
+                {result.result.historic_matches.map((h) => (
+                  <div key={`${h.year}-${h.stage}-${h.result}`} className="flex items-center gap-4 text-sm border-b border-white/5 py-2">
                     <span className="font-mono text-neon w-16">{h.year}</span>
                     <span className="text-[10px] uppercase tracking-[0.15em] text-zinc-500 w-24">{h.stage}</span>
                     <span className="font-mono text-white flex-1">{h.result}</span>

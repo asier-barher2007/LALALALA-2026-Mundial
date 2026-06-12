@@ -26,6 +26,18 @@ export const MatchCard = ({ match, testId }) => {
   const isLive = match.status === "LIVE";
   const isFt = match.status === "FT";
   const date = new Date(match.kickoff);
+
+  const renderStatusBadge = () => {
+    if (isLive) return <LiveBadge />;
+    if (isFt) return <span className="text-zinc-400">FT</span>;
+    return <span className="font-mono">{date.toLocaleString(undefined, { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}</span>;
+  };
+
+  const renderScore = () => {
+    if (match.status === "SCHEDULED") return "vs";
+    return `${match.score_home} - ${match.score_away}`;
+  };
+
   return (
     <Link
       to={`/matches/${match.id}`}
@@ -34,7 +46,7 @@ export const MatchCard = ({ match, testId }) => {
     >
       <div className="flex items-center justify-between text-[10px] uppercase tracking-[0.2em] text-zinc-500 mb-4">
         <span>{match.phase} · {match.group ? `Grupo ${match.group}` : ""}</span>
-        {isLive ? <LiveBadge /> : isFt ? <span className="text-zinc-400">FT</span> : <span className="font-mono">{date.toLocaleString(undefined, { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}</span>}
+        {renderStatusBadge()}
       </div>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3 flex-1">
@@ -42,7 +54,7 @@ export const MatchCard = ({ match, testId }) => {
           <span className="font-display font-bold uppercase tracking-tight text-sm sm:text-base">{home?.name}</span>
         </div>
         <div className="font-mono text-2xl sm:text-3xl text-white px-4">
-          {match.status === "SCHEDULED" ? "vs" : `${match.score_home} - ${match.score_away}`}
+          {renderScore()}
         </div>
         <div className="flex items-center gap-3 flex-1 justify-end">
           <span className="font-display font-bold uppercase tracking-tight text-sm sm:text-base text-right">{away?.name}</span>
@@ -51,7 +63,7 @@ export const MatchCard = ({ match, testId }) => {
       </div>
       {isLive && (
         <div className="mt-3 text-[10px] uppercase tracking-[0.2em] text-red-500 font-mono">
-          MIN {match.minute}'
+          MIN {match.minute}&apos;
         </div>
       )}
       <div className="mt-3 text-xs text-zinc-500 font-mono">

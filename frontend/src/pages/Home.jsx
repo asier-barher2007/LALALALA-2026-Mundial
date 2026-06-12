@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { fetchNextMatch, fetchMatches, fetchTopScorers, fetchStatsOverview } from "@/lib/api";
@@ -10,12 +10,31 @@ import { useI18n } from "@/lib/i18n";
 
 const HERO_BG = "https://images.unsplash.com/photo-1522778119026-d647f0596c20?w=2000&q=80";
 
+const STATS_STRIP = [
+  { id: "played", label: "PARTIDOS JUGADOS", key: "total_matches_played", icon: Trophy },
+  { id: "goals", label: "GOLES TOTALES", key: "total_goals", icon: Sparkles },
+  { id: "live", label: "EN VIVO", key: "total_matches_live", icon: Activity, accent: true },
+  { id: "scheduled", label: "POR JUGAR", key: "total_matches_scheduled", icon: Map },
+];
+
+const FEATURES = [
+  { id: "feature-simulator", to: "/simulator", title: "Simulador IA", desc: "Simula partidos completos con Claude AI basado en estadísticas reales.", icon: Sparkles },
+  { id: "feature-rivality", to: "/rivality", title: "Rivality Explorer", desc: "Comparador histórico entre dos selecciones con análisis IA.", icon: Activity },
+  { id: "feature-stadiums", to: "/stadiums", title: "Mapa interactivo", desc: "Estadios, ciudades y datos históricos de cada sede.", icon: Map },
+];
+
 const Home = () => {
   const { t } = useI18n();
   const { data: nextMatch } = useQuery({ queryKey: ["next-match"], queryFn: fetchNextMatch, refetchInterval: 5000 });
   const { data: matches } = useQuery({ queryKey: ["matches"], queryFn: () => fetchMatches() });
   const { data: scorers } = useQuery({ queryKey: ["scorers"], queryFn: fetchTopScorers });
   const { data: overview } = useQuery({ queryKey: ["overview"], queryFn: fetchStatsOverview });
+
+  const featuredMatches = useMemo(
+    () => (matches || []).filter(m => m.status !== "FT").slice(0, 4),
+    [matches]
+  );
+  const topScorers = useMemo(() => (scorers || []).slice(0, 8), [scorers]);
 
   const isLive = nextMatch?.status === "LIVE";
 
@@ -58,7 +77,7 @@ const Home = () => {
               </div>
               {isLive ? (
                 <div className="border-t border-white/10 pt-6 flex items-center justify-between">
-                  <div className="font-mono text-red-500 text-xl">MIN {nextMatch.minute}'</div>
+                  <div className="font-mono text-red-500 text-xl">MIN {nextMatch.minute}&apos;</div>
                   <Link to={`/matches/${nextMatch.id}`}>
                     <Button data-testid="hero-watch-live" className="bg-neon text-black hover:bg-cyan-300 uppercase tracking-widest text-xs rounded-none">
                       Ver en directo <ArrowRight size={14} className="ml-2" />
@@ -83,16 +102,11 @@ const Home = () => {
       {overview && (
         <section className="section-pad py-12 border-b border-white/10" data-testid="stats-strip">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-white/10 border border-white/10">
-            {[
-              { label: "PARTIDOS JUGADOS", value: overview.total_matches_played, icon: Trophy },
-              { label: "GOLES TOTALES", value: overview.total_goals, icon: Sparkles },
-              { label: "EN VIVO", value: overview.total_matches_live, icon: Activity, accent: true },
-              { label: "POR JUGAR", value: overview.total_matches_scheduled, icon: Map },
-            ].map((s, i) => (
-              <div key={i} className="bg-card p-6 flex items-center gap-4" data-testid={`stat-${i}`}>
+            {STATS_STRIP.map((s) => (
+              <div key={s.id} className="bg-card p-6 flex items-center gap-4" data-testid={`stat-${s.id}`}>
                 <s.icon size={24} className={s.accent ? "text-red-500" : "text-neon"} strokeWidth={1.5} />
                 <div>
-                  <div className="font-mono text-3xl font-bold">{s.value}</div>
+                  <div className="font-mono text-3xl font-bold">{overview[s.key]}</div>
                   <div className="text-[10px] tracking-[0.25em] uppercase text-zinc-500 mt-1">{s.label}</div>
                 </div>
               </div>
@@ -109,7 +123,7 @@ const Home = () => {
           action={<Link to="/matches"><Button variant="outline" size="sm" className="rounded-none uppercase tracking-widest text-xs" data-testid="view-all-matches">{t("common.viewAll")} <ArrowRight size={14} className="ml-2" /></Button></Link>}
         />
         <div className="grid md:grid-cols-2 gap-4">
-          {(matches || []).filter(m => m.status !== "FT").slice(0, 4).map(m => (
+          {featuredMatches.map(m => (
             <MatchCard key={m.id} match={m} testId={`home-match-${m.id}`} />
           ))}
         </div>
@@ -123,8 +137,8 @@ const Home = () => {
           action={<Link to="/stats"><Button variant="outline" size="sm" className="rounded-none uppercase tracking-widest text-xs" data-testid="view-all-stats">{t("common.viewAll")} <ArrowRight size={14} className="ml-2" /></Button></Link>}
         />
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-px bg-white/10 border border-white/10">
-          {(scorers || []).slice(0, 8).map((s, i) => (
-            <div key={s.player} className="bg-card p-5" data-testid={`scorer-${i}`}>
+          {topScorers.map((s, i) => (
+            <div key={s.player} className="bg-card p-5" data-testid={`scorer-${s.player}`}>
               <div className="font-mono text-xs text-zinc-500 mb-2">#{i + 1}</div>
               <div className="font-display text-lg uppercase tracking-tight font-semibold">{s.player}</div>
               <div className="flex items-center gap-2 mt-1 text-xs text-zinc-400">
@@ -149,12 +163,8 @@ const Home = () => {
       <section className="section-pad py-16 border-t border-white/10" data-testid="features-grid">
         <SectionHeader kicker="INNOVACIÓN" title="Lo que solo encontrarás aquí" />
         <div className="grid md:grid-cols-3 gap-4">
-          {[
-            { to: "/simulator", title: "Simulador IA", desc: "Simula partidos completos con Claude AI basado en estadísticas reales.", icon: Sparkles, id: "feature-simulator" },
-            { to: "/rivality", title: "Rivality Explorer", desc: "Comparador histórico entre dos selecciones con análisis IA.", icon: Activity, id: "feature-rivality" },
-            { to: "/stadiums", title: "Mapa interactivo", desc: "Estadios, ciudades y datos históricos de cada sede.", icon: Map, id: "feature-stadiums" },
-          ].map(f => (
-            <Link key={f.to} to={f.to} className="bg-card border border-white/10 p-6 hover-glow group" data-testid={f.id}>
+          {FEATURES.map(f => (
+            <Link key={f.id} to={f.to} className="bg-card border border-white/10 p-6 hover-glow group" data-testid={f.id}>
               <f.icon size={28} className="text-neon mb-4" strokeWidth={1.5} />
               <h3 className="font-display text-xl uppercase tracking-tight mb-2">{f.title}</h3>
               <p className="text-sm text-zinc-400 leading-relaxed">{f.desc}</p>

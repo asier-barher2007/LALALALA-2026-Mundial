@@ -9,7 +9,9 @@ from datetime import datetime, timezone
 from typing import Optional
 import os
 import logging
-import random
+import secrets
+
+_RAND = secrets.SystemRandom()
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -100,7 +102,6 @@ async def list_matches(status: Optional[str] = None):
 
 @api.get("/matches/next")
 async def next_match():
-    now = datetime.now(timezone.utc)
     # First any LIVE
     live = [m for m in MATCHES if m["status"] == "LIVE"]
     if live:
@@ -124,7 +125,7 @@ async def get_match(match_id: str):
         if "live" in out and "momentum" in out["live"]:
             base = list(out["live"]["momentum"])
             if base:
-                base[-1] = max(-100, min(100, base[-1] + random.randint(-8, 8)))
+                base[-1] = max(-100, min(100, base[-1] + _RAND.randint(-8, 8)))
             out["live"] = {**out["live"], "momentum": base}
     return out
 

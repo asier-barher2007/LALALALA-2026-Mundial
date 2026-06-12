@@ -5,6 +5,12 @@ import { SectionHeader } from "@/components/Shared";
 import { RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, Legend } from "recharts";
 
 const PALETTE = ["#00E5FF", "#FF2A54", "#FFB800", "#8B5CF6", "#10B981"];
+const RADAR_STATS = ["attack", "defense", "possession", "speed", "creativity"];
+const AXIS_TICK = { fill: "#888", fontSize: 11 };
+const RADIUS_TICK = { fill: "#666", fontSize: 10 };
+const BAR_AXIS_TICK = { fontSize: 10 };
+const CHART_TOOLTIP_STYLE = { background: "#0a0a0a", border: "1px solid rgba(255,255,255,0.1)", fontSize: 12 };
+const LEGEND_STYLE = { fontSize: 11 };
 
 const Stats = () => {
   const { data: scorers } = useQuery({ queryKey: ["scorers"], queryFn: fetchTopScorers });
@@ -12,7 +18,7 @@ const Stats = () => {
   const { data: overview } = useQuery({ queryKey: ["overview"], queryFn: fetchStatsOverview });
 
   const radarTeams = overview?.team_radar ? Object.entries(overview.team_radar) : [];
-  const radarData = ["attack", "defense", "possession", "speed", "creativity"].map(k => {
+  const radarData = RADAR_STATS.map(k => {
     const row = { stat: k.toUpperCase() };
     radarTeams.forEach(([id, data]) => { row[id] = data[k]; });
     return row;
@@ -32,13 +38,13 @@ const Stats = () => {
           <ResponsiveContainer width="100%" height="100%" minHeight={320}>
             <RadarChart data={radarData}>
               <PolarGrid stroke="#222" />
-              <PolarAngleAxis dataKey="stat" tick={{ fill: "#888", fontSize: 11 }} />
-              <PolarRadiusAxis stroke="#333" tick={{ fill: "#666", fontSize: 10 }} />
+              <PolarAngleAxis dataKey="stat" tick={AXIS_TICK} />
+              <PolarRadiusAxis stroke="#333" tick={RADIUS_TICK} />
               {radarTeams.map(([id], i) => (
                 <Radar key={id} name={id.toUpperCase()} dataKey={id} stroke={PALETTE[i]} fill={PALETTE[i]} fillOpacity={0.2} strokeWidth={2} />
               ))}
-              <Tooltip contentStyle={{ background: "#0a0a0a", border: "1px solid rgba(255,255,255,0.1)", fontSize: 12 }} />
-              <Legend wrapperStyle={{ fontSize: 11 }} />
+              <Tooltip contentStyle={CHART_TOOLTIP_STYLE} />
+              <Legend wrapperStyle={LEGEND_STYLE} />
             </RadarChart>
           </ResponsiveContainer>
         </div>
@@ -51,10 +57,10 @@ const Stats = () => {
         <div className="h-72 min-h-[288px] w-full">
           <ResponsiveContainer width="100%" height="100%" minHeight={288}>
             <BarChart data={scorerBar}>
-              <XAxis dataKey="name" stroke="#888" tick={{ fontSize: 10 }} />
-              <YAxis stroke="#888" tick={{ fontSize: 10 }} />
-              <Tooltip contentStyle={{ background: "#0a0a0a", border: "1px solid rgba(255,255,255,0.1)", fontSize: 12 }} />
-              <Legend wrapperStyle={{ fontSize: 11 }} />
+              <XAxis dataKey="name" stroke="#888" tick={BAR_AXIS_TICK} />
+              <YAxis stroke="#888" tick={BAR_AXIS_TICK} />
+              <Tooltip contentStyle={CHART_TOOLTIP_STYLE} />
+              <Legend wrapperStyle={LEGEND_STYLE} />
               <Bar dataKey="goals" fill="#00E5FF" />
               <Bar dataKey="xg" fill="#FF2A54" />
             </BarChart>
